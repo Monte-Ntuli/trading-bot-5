@@ -63,10 +63,14 @@ public:
    }
 
    // Return pointer to array and count
-   const CZone* GetZones(int &count) {
-      count = _count;
-      return _pool;
+   // Return zones via output array and count
+void GetZones(CZone &outZones[], int &count) {
+   count = _count; // Update the count
+   ArrayResize(outZones, _count); // Resize the output array
+   for (int i = 0; i < _count; i++) {
+      outZones[i] = _pool[i]; // Copy each element
    }
+}
    
    // Check if a zone still meets validity criteria (freshness, width, etc.)
    bool IsZoneValid(const CZone &z, const MqlRates &r[]) const {
@@ -82,7 +86,7 @@ public:
       CZone *best = NULL;
       double bestDist = DBL_MAX;
       for(int i = 0; i < _count; i++) {
-         CZone &z = _pool[i];
+         CZone z = _pool[i];
          if(z.Type != type) continue;
          if(!IsZoneValid(z, r)) continue;
          double mid = (z.Top + z.Base) / 2.0;
