@@ -26,14 +26,25 @@ private:
 public:
    QMDetector(int lk=5): _lk(lk) {}
    SQuasimodo Detect(const MqlRates &r[]) {
+   
+    Print("[QMDetector] Detect(): entry");
+    
       SQuasimodo q = {0,0,0,0,false,SIGNAL_NONE};
       int n = ArraySize(r);
-      if(n < 4) return q;
+      if(n < 4) {
+      PrintFormat("[QMDetector] Detect(): insufficient bars (%d), abort", n);
+      return q;
+      }
+      
       if(r[3].high>r[2].high && r[2].high>r[1].high && r[3].low<r[2].low && r[2].low<r[1].low) {
          q.LeftShoulder = r[3].high; q.Head = r[2].high; q.RightShoulder = r[1].high;
          q.MPL = (q.LeftShoulder + q.Head)/2;
          q.Type = SIGNAL_QM_SELL;
          q.Confirmed = ValidateMPL(q, r);
+         
+         PrintFormat("[QMDetector] Sell QM detected: Head=%.5f, MPL=%.5f, Confirmed=%s",
+                     q.Head, q.MPL, q.Confirmed ? "Yes" : "No");
+                     
          return q;
       }
       if(r[3].low<r[2].low && r[2].low<r[1].low && r[3].high>r[2].high && r[2].high>r[1].high) {
@@ -41,8 +52,13 @@ public:
          q.MPL = (q.LeftShoulder + q.Head)/2;
          q.Type = SIGNAL_QM_BUY;
          q.Confirmed = ValidateMPL(q, r);
+         
+          PrintFormat("[QMDetector] Buy QM detected: Head=%.5f, MPL=%.5f, Confirmed=%s",
+                     q.Head, q.MPL, q.Confirmed ? "Yes" : "No");
+                     
          return q;
       }
+      Print("[QMDetector] Detect(): no QM pattern found");
       return q;
    }
 };
